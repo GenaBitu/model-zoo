@@ -2,10 +2,14 @@ using Flux;
 
 include("dataset.jl")
 
-function plotModel(ds::Tuple{AbstractMatrix, AbstractVector}, model)
-	plotTwoMoonDS(testDS);
-	heatmap!(x, y, z; colorbar = false);
+function plotModel(ds::Tuple{AbstractMatrix, AbstractVector}, model, performance)
+	p1 = plotTwoMoonDS(testDS);
+	heatmap!(p1, x, y, z, colorbar = false);
+	p2 = plot(performance, label="Loss", ylims = (0:1));
+	plot(p1, p2, layout=(1,2));
 end
+
+numBatches = 10000;
 
 Layer(in::Int, out::Int) = Flux.Dense(in, out, tanh);
 
@@ -15,12 +19,14 @@ testDS = generateTwoMoonDS(100);
 
 loss(x, y) = Flux.logitcrossentropy(model(x), Flux.onehotbatch(y, 1:2));
 
-for _ in 1:10000
-	Flux.train!(loss, [trainDS], ADAM(params(model)));
+performance = Vector{Float32}(numBatches);
+
+for i in 1:numBatches
+	Flux.train!(loss, [trainDS], ADAM(params(model)), cb = () -> begin performance[i] = loss(testDS...).data[1]; end);
 end
 
 x = 0:0.01:1;
 y = 0:0.01:1;
 z = [model([yi, xi]).data[2] for (xi, yi) in Base.product(x, y)];
 
-plotModel(testDS, model);
+plotModel(testDS, model, performance);

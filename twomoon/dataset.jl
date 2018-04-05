@@ -20,6 +20,7 @@ function plotTwoMoonDS(ds::Tuple{AbstractMatrix, AbstractVector})
 	(X, Y) = ds
 	negds = X[:, Y .== 1];
 	posds = X[:, Y .== 2];
-	scatter(getindex(negds, 1, :), getindex(negds, 2, :), label = "negative", aspect_ratio = :equal, xlims=(0:1), ylims=(0:1));
-	scatter!(getindex(posds, 1, :), getindex(posds, 2, :), label = "positive");
+	res = scatter(getindex(negds, 1, :), getindex(negds, 2, :), label = "negative", aspect_ratio = :equal, xlims = (0:1), ylims = (0:1));
+	scatter!(res, getindex(posds, 1, :), getindex(posds, 2, :), label = "positive");
+	return res;
 end
