@@ -4,7 +4,7 @@ include("dataset.jl")
 
 function plotModel(ds::Tuple{AbstractMatrix, AbstractVector}, model)
 	plotTwoMoonDS(testDS);
-	heatmap!(x, y, z);
+	heatmap!(x, y, z; colorbar = false);
 end
 
 Layer(in::Int, out::Int) = Flux.Dense(in, out, tanh);
