@@ -1,4 +1,5 @@
 using Flux;
+using Plots;
 
 include("dataset.jl")
 
@@ -11,7 +12,7 @@ end
 
 numBatches = 10000;
 
-Layer(in::Int, out::Int) = Flux.Dense(in, out, tanh);
+Layer(in::Int, out::Int) = Flux.Dense(in, out, Flux.swish);
 
 model = Chain(Layer(2, 4), Layer(4, 8), Layer(8, 8), Layer(8, 4), Dense(4, 2), softmax);
 trainDS = generateTwoMoonDS(1000);
@@ -22,7 +23,7 @@ loss(x, y) = Flux.logitcrossentropy(model(x), Flux.onehotbatch(y, 1:2));
 performance = Vector{Float32}(numBatches);
 
 for i in 1:numBatches
-	Flux.train!(loss, [trainDS], ADAM(params(model)), cb = () -> begin performance[i] = loss(testDS...).data[1]; end);
+	Flux.train!(loss, [trainDS], ADAM(params(model)), cb = () -> begin performance[i] = Flux.data(loss(testDS...)); end);
 end
 
 x = 0:0.01:1;
