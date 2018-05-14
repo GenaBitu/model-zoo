@@ -14,7 +14,7 @@ numBatches = 10000;
 
 Layer(in::Int, out::Int) = Flux.Dense(in, out, Flux.swish);
 
-model = Chain(Layer(2, 4), Layer(4, 8), Layer(8, 8), Layer(8, 4), Dense(4, 2), softmax);
+model = Chain(Layer(2, 4), Layer(4, 8), Layer(8, 8), Layer(8, 4), Dense(4, 2, tanh), softmax);
 trainDS = generateTwoMoonDS(1000);
 testDS = generateTwoMoonDS(100);
 
