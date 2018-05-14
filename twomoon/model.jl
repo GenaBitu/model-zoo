@@ -12,18 +12,16 @@ end
 
 numBatches = 10000;
 
-Layer(in::Int, out::Int) = Flux.Dense(in, out, Flux.swish);
+Layer(in::Int, out::Int) = Flux.TargetDense(in, out, Flux.swish, Flux.logitcrossentropy);
 
-model = Chain(Layer(2, 4), Layer(4, 8), Layer(8, 8), Layer(8, 4), Dense(4, 2, tanh), softmax);
+model = Chain(Layer(2, 4), Layer(4, 8), Layer(8, 8), Layer(8, 4), TargetDense(4, 2, tanh, Flux.logitcrossentropy), softmax);
 trainDS = generateTwoMoonDS(1000);
 testDS = generateTwoMoonDS(100);
-
-loss(x, y) = Flux.logitcrossentropy(model(x), Flux.onehotbatch(y, 1:2));
 
 performance = Vector{Float32}(numBatches);
 
 for i in 1:numBatches
-	Flux.train!(loss, [trainDS], ADAM(params(model)), cb = () -> begin performance[i] = Flux.data(loss(testDS...)); end);
+	Flux.targettrain!(model, [trainDS], ADAM(params(model)), cb = () -> begin performance[i] = Flux.data(loss(testDS...)); end);
 end
 
 x = 0:0.01:1;
