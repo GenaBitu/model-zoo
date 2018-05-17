@@ -10,22 +10,25 @@ function plotModel(ds::Tuple{AbstractMatrix, AbstractVector}, model, performance
 	plot(p1, p2, layout=(1,2));
 end
 
-numBatches = 10000;
+numBatches = 2;
+loss = Flux.crossentropy;
 
-Layer(in::Int, out::Int) = Flux.TargetDense(in, out, Flux.swish, Flux.logitcrossentropy);
+Layer(in::Int, out::Int) = TargetDense(in, out, Flux.swish, loss);
 
-model = Chain(Layer(2, 4), Layer(4, 8), Layer(8, 8), Layer(8, 4), TargetDense(4, 2, tanh, Flux.logitcrossentropy), softmax);
+model = Chain(Layer(2, 4), Layer(4, 8), Layer(8, 8), Layer(8, 4), TargetDense(4, 2, tanh, loss), TargetSoftmax(2, 2));
 trainDS = generateTwoMoonDS(1000);
 testDS = generateTwoMoonDS(100);
+
+modelloss(x, y) = loss(model(x), Flux.onehotbatch(y, 1:2));
 
 performance = Vector{Float32}(numBatches);
 
 for i in 1:numBatches
-	Flux.targettrain!(model, [trainDS], ADAM(params(model)), cb = () -> begin performance[i] = Flux.data(loss(testDS...)); end);
+	targettrain!(model, modelloss, [trainDS], ADAM(params(model)), cb = () -> begin performance[i] = Flux.data(modelloss(testDS...)); end);
 end
 
 x = 0:0.01:1;
 y = 0:0.01:1;
-z = [model([yi, xi]).data[2] for (xi, yi) in Base.product(x, y)];
+z = [model([yi, xi])[2] for (xi, yi) in Base.product(x, y)];
 
 plotModel(testDS, model, performance);
