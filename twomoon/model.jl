@@ -11,11 +11,11 @@ function plotModel(ds::Tuple{AbstractMatrix, Flux.OneHotMatrix}, model, performa
 end
 
 numBatches = 2;
-loss = Flux.crossentropy;
+loss = Flux.logitcrossentropy;
 
 Layer(in::Int, out::Int) = TargetDense(in, out, Flux.swish, loss);
 
-model = Chain(Layer(2, 4), Layer(4, 8), Layer(8, 8), Layer(8, 4), TargetDense(4, 2, tanh, loss), TargetSoftmax(2, 2));
+model = Chain(Layer(2, 4), Layer(4, 8), Layer(8, 8), Layer(8, 4), TargetDense(4, 2, tanh, loss), TargetSoftmax(2, loss));
 trainDS = generateTwoMoonDS(1000);
 testDS = generateTwoMoonDS(100);
 
@@ -24,7 +24,7 @@ modelloss(x, y) = loss(model(x), y);
 performance = Vector{Float32}(numBatches);
 
 for i in 1:numBatches
-	targettrain!(model, modelloss, [trainDS], ADAM(params(model)), cb = () -> begin performance[i] = Flux.data(modelloss(testDS...)); end);
+	targettrain!(model, [trainDS], ADAM(params(model)), cb = () -> begin performance[i] = Flux.data(modelloss(testDS...)); end);
 end
 
 x = 0:0.01:1;
