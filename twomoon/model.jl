@@ -3,7 +3,7 @@ using Plots;
 
 include("dataset.jl")
 
-function plotModel(ds::Tuple{AbstractMatrix, AbstractVector}, model, performance)
+function plotModel(ds::Tuple{AbstractMatrix, Flux.OneHotMatrix}, model, performance)
 	p1 = plotTwoMoonDS(testDS);
 	heatmap!(p1, x, y, z, colorbar = false);
 	p2 = plot(performance, label="Loss", ylims = (0:1));
@@ -19,7 +19,7 @@ model = Chain(Layer(2, 4), Layer(4, 8), Layer(8, 8), Layer(8, 4), TargetDense(4,
 trainDS = generateTwoMoonDS(1000);
 testDS = generateTwoMoonDS(100);
 
-modelloss(x, y) = loss(model(x), Flux.onehotbatch(y, 1:2));
+modelloss(x, y) = loss(model(x), y);
 
 performance = Vector{Float32}(numBatches);
 
@@ -29,6 +29,6 @@ end
 
 x = 0:0.01:1;
 y = 0:0.01:1;
-z = [model([yi, xi])[2] for (xi, yi) in Base.product(x, y)];
+z = [Flux.data(model([yi, xi]))[2] for (xi, yi) in Base.product(x, y)];
 
 plotModel(testDS, model, performance);
