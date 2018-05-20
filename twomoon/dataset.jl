@@ -19,9 +19,9 @@ end
 
 function plotTwoMoonDS(ds::Tuple{AbstractMatrix, Flux.OneHotMatrix})
 	(X, Y) = ds;
-	Y = Y[1, :];
-	negds = X[:, Y .== 1];
-	posds = X[:, Y .== 2];
+	Y = Y[2, :];
+	negds = X[:, Y .== false];
+	posds = X[:, Y .== true];
 	res = scatter(getindex(negds, 1, :), getindex(negds, 2, :), label = "negative", aspect_ratio = :equal, xlims = (0:1), ylims = (0:1));
 	scatter!(res, getindex(posds, 1, :), getindex(posds, 2, :), label = "positive");
 	return res;
