@@ -14,7 +14,8 @@ numBatches = 10000;
 loss = Flux.mse;
 modelloss(x, y) = Flux.mse(softmax(x), y);
 #reg = Flux.l2(0.000001);
-reg = Flux.regcov(0.00001);
+#reg = Flux.regcov(0.00001);
+reg = Flux.l2(0);
 
 Layer(in::Int, out::Int) = TargetDense(in, out, Flux.swish, loss; regulariser = reg);
 
@@ -27,7 +28,7 @@ testDS = generateTwoMoonDS(100);
 performance = Vector{Float32}(numBatches);
 
 for i in 1:numBatches
-	targettrain!(model, modelloss, [trainDS], ADAM(params(model)), η = 1, cb = () -> begin performance[i] = Flux.data(modelloss(model(testDS[1]), testDS[2])); end);
+	difftargettrain!(model, modelloss, [trainDS], ADAM(params(model)), η = 0.001, cb = () -> begin performance[i] = Flux.data(modelloss(model(testDS[1]), testDS[2])); end);
 end
 
 x = 0:0.01:1;
