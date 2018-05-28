@@ -30,7 +30,7 @@ function loaddata()
   y = Int.(data[:,1])
   bags = findranges(data[:,2])
   x = data[:,3:end]'
-  y = map(b -> maximum(y[b]),bags) + 1
+  y = Flux.onehotbatch(map(b -> maximum(y[b]),bags) + 1, 1:2)
   return(y,bags,x)
 end
 
@@ -56,9 +56,9 @@ struct BagModel{A,F,B}
     post::B
 end
 
-# forward pass for the flux model 
+# forward pass for the flux model
 (m::BagModel)(x,bags) = m.post(m.aggregation(m.pre(x),bags))
-Flux.Optimise.children(m::BagModel) = [m.pre,m.post]
+Flux.treelike(BagModel, [:pre, :post])
 
 
 # load the data, define the model and loss function
@@ -66,7 +66,7 @@ Flux.Optimise.children(m::BagModel) = [m.pre,m.post]
 model = BagModel(Dense(size(x,1),10,Flux.relu),
   segmented_mean,
   Chain(Dense(10,10,Flux.relu),Dense(10,2)));
-loss(x,bags,y) = Flux.crossentropy(model(x,bags),y);
+loss(x,bags,y) = Flux.logitcrossentropy(model(x,bags),y);
 
 # initialize the training algorithm and iterations
 dataset = repeated((x,bags, y), 20000)
