@@ -10,16 +10,17 @@ function plotModel(ds::Tuple{AbstractMatrix, Flux.OneHotMatrix}, model, performa
 	plot(p1, p2, layout=(1,2));
 end
 
-numBatches = 1000;
+numBatches = 10000;
 loss = Flux.mse;
 modelloss(x, y) = Flux.mse(softmax(x), y);
-reg = Flux.regcov;
-λ = 5;
+#reg = Flux.l2(0.000001);
+reg = Flux.regcov(0.00001);
 
-Layer(in::Int, out::Int) = TargetDense(in, out, Flux.swish, loss; regulariser = reg, λ = λ);
+Layer(in::Int, out::Int) = TargetDense(in, out, Flux.swish, loss; regulariser = reg);
 
-#model = Chain(Layer(2, 4), Layer(4, 8), Layer(8, 8), Layer(8, 4), TargetDense(4, 2, tanh, loss; regulariser = reg, λ = λ));
-model = Chain(Layer(2, 2));
+#model = Chain(Layer(2, 4), Layer(4, 8), Layer(8, 8), Layer(8, 4), TargetDense(4, 2, tanh, loss; regulariser = reg));
+model = Chain(Layer(2, 2), Layer(2, 2));
+#model = Chain(Layer(2, 2));
 trainDS = generateTwoMoonDS(1000);
 testDS = generateTwoMoonDS(100);
 
