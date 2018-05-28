@@ -27,7 +27,7 @@ testDS = generateTwoMoonDS(100);
 performance = Vector{Float32}(numBatches);
 
 for i in 1:numBatches
-	targettrain!(model, modelloss, [trainDS], ADAM(params(model)), cb = () -> begin performance[i] = Flux.data(modelloss(model(testDS[1]), testDS[2])); end);
+	targettrain!(model, modelloss, [trainDS], ADAM(params(model)), η = 1, cb = () -> begin performance[i] = Flux.data(modelloss(model(testDS[1]), testDS[2])); end);
 end
 
 x = 0:0.01:1;
