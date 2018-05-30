@@ -10,25 +10,27 @@ function plotModel(ds::Tuple{AbstractMatrix, Flux.OneHotMatrix}, model, performa
 	plot(p1, p2, layout=(1,2));
 end
 
-numBatches = 10000;
+numBatches = 1000;
+σ = Flux.relu;
 loss = Flux.mse;
 modelloss(x, y) = Flux.mse(softmax(x), y);
 #reg = Flux.l2(0.000001);
 #reg = Flux.regcov(0.00001);
 reg = Flux.l2(0);
 
-Layer(in::Int, out::Int) = TargetDense(in, out, Flux.swish, loss; regulariser = reg);
+#Layer(in::Int, out::Int) = TargetDense(Chain(Dense(in, 8, σ), Dense(8, 8, σ), Dense(8, out)), Chain(Dense(out, 8, σ), Dense(8, 8, σ), Dense(8, in, identity)), loss; regulariser = reg);
+Layer(in::Int, out::Int) = TargetDense(Chain(Dense(in, out, σ)), Chain(Dense(out, 8, σ), Dense(8, in, identity)), loss; regulariser = reg);
 
 #model = Chain(Layer(2, 4), Layer(4, 8), Layer(8, 8), Layer(8, 4), TargetDense(4, 2, tanh, loss; regulariser = reg));
-model = Chain(Layer(2, 2), Layer(2, 2));
-#model = Chain(Layer(2, 2));
-trainDS = generateTwoMoonDS(1000);
+#model = Chain(Layer(2, 16), Layer(16, 2));
+model = Chain(Layer(2, 2));
+trainDS = generateTwoMoonDS(10);
 testDS = generateTwoMoonDS(100);
 
 performance = Vector{Float32}(numBatches);
 
 for i in 1:numBatches
-	difftargettrain!(model, modelloss, [trainDS], ADAM(params(model)), η = 0.001, cb = () -> begin performance[i] = Flux.data(modelloss(model(testDS[1]), testDS[2])); end);
+	targettrain!(model, modelloss, [trainDS], ADAM(params(model)), η = 0.01, cb = () -> begin performance[i] = Flux.data(modelloss(model(testDS[1]), testDS[2])); end);
 end
 
 x = 0:0.01:1;
