@@ -17,10 +17,9 @@ loss = Flux.mse;
 modelloss(x, y) = Flux.mse(x, y);
 #reg = Flux.l2(0.000001);
 #reg = Flux.regcov(0.00001);
-reg = Flux.l2(0);
+#reg = Flux.l2(0);
 
-#Layer(in::Int, out::Int) = Target(Chain(Dense(in, 8, σ), Dense(8, 8, σ), Dense(8, out)), Chain(Dense(out, 8, σ), Dense(8, 8, σ), Dense(8, in, identity)), loss; regulariser = reg);
-Layer(in::Int, out::Int) = Target(Chain(Dense(in, out, σ)), Chain(Dense(out, 8, σ), Dense(8, in, identity)), loss; σ = noiseDeviation, regulariser = reg);
+Layer(in::Int, out::Int) = Target(Chain(Dense(in, out, σ)), Chain(Dense(out, 8, σ), Dense(8, in, identity)), loss; σ = noiseDeviation);
 
 #model = Chain(Layer(2, 4), Layer(4, 8), Layer(8, 8), Layer(8, 4), Target(4, 2, tanh, loss; regulariser = reg));
 #model = Chain(Layer(2, 16), Layer(16, 2));
