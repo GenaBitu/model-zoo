@@ -4,10 +4,23 @@ using Plots;
 include("dataset.jl")
 
 function plotModel(ds::Tuple{AbstractMatrix, Flux.OneHotMatrix}, model, performance)
-	p1 = plotTwoMoonDS(testDS);
-	heatmap!(p1, x, y, z, colorbar = false);
-	p2 = plot(performance, label="Loss", ylims = (0:1));
-	plot(p1, p2, layout=(1,2));
+	plots = [plotTwoMoonDS(testDS)];
+	heatmap!(plots[1], x, y, z, colorbar = false, title = "Heatmap");
+	push!(plots, plot(performance, label = "Loss", ylims = (0:1), title = "Final loss"));
+	i = 1;
+	for layer in model
+		if isa(layer, Target)
+			for (key, value) in layer.debuglog
+				if contains(key, "angle")
+					push!(plots, plot(value, label = "", title = "Layer " * string(i) * ": " * key, ylims = (0,180),))
+				else
+					push!(plots, plot(value, label = "", title = "Layer " * string(i) * ": " * key, ylims = (0.001,1), yscale = :log10))
+				end
+			end
+		end
+		i += 1
+	end
+	plot(plots..., size = (1000, 800));
 end
 
 numBatches = 2000;
@@ -30,7 +43,7 @@ testDS = generateTwoMoonDS(100);
 performance = Vector{Float32}(numBatches);
 
 for i in 1:numBatches
-	targettrain!(model, modelloss, [trainDS], ADAM(params(model)), η = 0.5, cb = () -> begin performance[i] = Flux.data(modelloss(model(testDS[1]), testDS[2])); end);
+	targettrain!(model, modelloss, [trainDS], ADAM(params(model)), η = 0.5, cb = () -> begin performance[i] = Flux.data(modelloss(model(testDS[1]), testDS[2])); end, debug = ["Classifier", "Auto-encoder", "angle"]);
 end
 
 x = 0:0.01:1;
