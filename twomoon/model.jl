@@ -27,7 +27,7 @@ numBatches = 2000;
 σ = Flux.swish;
 noiseDeviation = 0.2;
 loss = Flux.mse;
-modelloss(x, y) = Flux.mse(x, y);
+modelloss(x, y) = Flux.mse(softmax(x), y);
 #reg = Flux.l2(0.000001);
 #reg = Flux.regcov(0.00001);
 #reg = Flux.l2(0);
@@ -35,8 +35,7 @@ modelloss(x, y) = Flux.mse(x, y);
 Layer(in::Int, out::Int) = Target(Chain(Dense(in, out, σ)), Chain(Dense(out, 8, σ), Dense(8, in, identity)), loss; σ = noiseDeviation);
 
 #model = Chain(Layer(2, 4), Layer(4, 8), Layer(8, 8), Layer(8, 4), Target(4, 2, tanh, loss; regulariser = reg));
-#model = Chain(Layer(2, 16), Layer(16, 2));
-model = Chain(Layer(2, 16), Layer(16, 2), Target(softmax, Chain(Dense(2, 4, σ), Dense(4, 2, identity)), loss; σ = noiseDeviation));
+model = Chain(Layer(2, 16), Layer(16, 2));
 trainDS = generateTwoMoonDS(1000);
 testDS = generateTwoMoonDS(100);
 
