@@ -11,7 +11,7 @@ function generateTwoMoonDS(count::Int; T::Type = Float32, std = 0.025f0)::Tuple{
 			X[:, i] = [x, -2*sqrt(0.3^2 - (x - 0.6)^2) + 0.7] .+ (randn(2) .* std);
 		else
 			x = 0.1f0 + rand(T) * 0.6f0;
-			X[:, i] = [x, 2*sqrt(0.3^2 - (x - 0.4)^2) + 0.3] .+ (randn(2) .* std);
+			X[:, i] = [x, +2*sqrt(0.3^2 - (x - 0.4)^2) + 0.3] .+ (randn(2) .* std);
 		end
 	end
 	return (X, Flux.onehotbatch(Y, 1:2));

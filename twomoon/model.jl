@@ -6,7 +6,7 @@ include("dataset.jl")
 function plotModel(ds::Tuple{AbstractMatrix, Flux.OneHotMatrix}, model, performance)
 	plots = [plotTwoMoonDS(testDS)];
 	heatmap!(plots[1], x, y, z, colorbar = false, title = "Heatmap");
-	push!(plots, plot(performance, label = "Loss", ylims = (0:1), title = "Final loss"));
+	push!(plots, plot(performance, label = "Loss", ylims = (0.001,1), yscale = :log10, title = "Final loss"));
 	i = 1;
 	for layer in model
 		if isa(layer, Target)
