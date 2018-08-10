@@ -1,5 +1,6 @@
 using Flux;
 using Plots;
+plotly();
 
 include("dataset.jl")
 
@@ -8,17 +9,29 @@ function plotModel(ds::Tuple{AbstractMatrix, Flux.OneHotMatrix}, model, performa
 	heatmap!(plots[1], x, y, z, colorbar = false, title = "Heatmap");
 	push!(plots, plot(performance, label = "Loss", ylims = (0.001,1), yscale = :log10, title = "Final loss"));
 	i = 1;
+	jacobian = Vector{Matrix}();
 	for layer in model
 		if isa(layer, Target)
 			for (key, value) in layer.debuglog
 				if contains(key, "angle")
 					push!(plots, plot(value, label = "", title = "Layer " * string(i) * ": " * key, ylims = (0,180),))
-				else
+				elseif contains(key, "loss")
 					push!(plots, plot(value, label = "", title = "Layer " * string(i) * ": " * key, ylims = (0.001,1), yscale = :log10))
+				elseif contains(key, "jacobian")
+					if size(jacobian) == (0,)
+						jacobian = value;
+					else
+						jacobian .= value .* jacobian;
+					end
 				end
 			end
 		end
 		i += 1
+	end
+	if size(jacobian) != (0,)
+		singularvalues = map(x->svdvals(x'), jacobian);
+		ratios = map(x->x[1] / x[end], singularvalues);
+		push!(plots, plot(acosd.(1 ./ ratios), label = "", title = "Maximum angle by theorem", ylims = (0,180),))
 	end
 	plot(plots..., size = (1000, 800));
 end
@@ -42,7 +55,7 @@ testDS = generateTwoMoonDS(100);
 performance = Vector{Float32}(numBatches);
 
 for i in 1:numBatches
-	targettrain!(model, modelloss, [trainDS], ADAM(params(model)), η = 0.5, cb = () -> begin performance[i] = Flux.data(modelloss(model(testDS[1]), testDS[2])); end, debug = ["Classifier", "Auto-encoder", "angle"]);
+	targettrain!(model, modelloss, [trainDS], ADAM(params(model)), η = 0.5, cb = () -> begin performance[i] = Flux.data(modelloss(model(testDS[1]), testDS[2])); end, debug = ["Classifier loss", "Auto-encoder loss", "angle", "jacobian"]);
 end
 
 x = 0:0.01:1;
