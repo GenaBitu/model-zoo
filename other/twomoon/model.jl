@@ -1,6 +1,5 @@
 using Flux;
 using Plots;
-plotly();
 
 include("dataset.jl")
 
@@ -58,8 +57,7 @@ for i in 1:numBatches
 	targettrain!(model, modelloss, [trainDS], ADAM(params(model)), η = 0.5, cb = () -> begin performance[i] = Flux.data(modelloss(model(testDS[1]), testDS[2])); end, debug = ["Classifier loss", "Auto-encoder loss", "angle", "jacobian"]);
 end
 
-x = 0:0.01:1;
-y = 0:0.01:1;
+x = y = linspace(0, 1, 100);
 z = [Flux.data(model([yi, xi]))[2] for (xi, yi) in Base.product(x, y)];
 
 plotModel(testDS, model, performance);
