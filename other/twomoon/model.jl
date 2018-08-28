@@ -23,6 +23,8 @@ function plotModel(ds::Tuple{AbstractMatrix, Flux.OneHotMatrix}, model, performa
 					else
 						jacobian .= value .* jacobian;
 					end
+				else
+					push!(plots, plot(value, label = "", title = "Layer " * string(i) * ": " * key, ylims = (0, 1)))
 				end
 			end
 		end
@@ -55,10 +57,10 @@ testDS = generateTwoMoonDS(100);
 performance = Vector{Float32}(numBatches);
 
 for i in 1:numBatches
-	targettrain!(model, modelloss, [trainDS], ADAM(params(model)), η = 0.5, cb = () -> begin performance[i] = Flux.data(modelloss(model(testDS[1]), testDS[2])); end, debug = ["Classifier loss", "Auto-encoder loss", "angle"]);
+	targettrain!(model, modelloss, [trainDS], ADAM(params(model)), η = 0.5, cb = () -> begin performance[i] = Flux.data(modelloss(model(testDS[1]), testDS[2])); end, debug = ["Classifier loss", "Auto-encoder loss", "angle", "difference", "average", "jacobian"]);
 end
 
 #x = y = linspace(0, 1, 100);
-#z = [Flux.data(model([yi, xi]))[2] for (xi, yi) in Base.product(x, y)];
+#z = [Flux.data(softmax(model([yi, xi])))[2] for (xi, yi) in Base.product(x, y)];
 
 plotModel(testDS, model, performance);
