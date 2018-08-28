@@ -1,21 +1,22 @@
 using Flux;
-using Plots;
+using PGFPlots;
+using Colors;
 
 include("dataset.jl")
 
 function plotModel(ds::Tuple{AbstractMatrix, Flux.OneHotMatrix}, model, performance)
 	plots = [plotTwoMoonDS(testDS)];
-	heatmap!(plots[1], x, y, z, colorbar = false, title = "Heatmap");
-	push!(plots, plot(performance, label = "Loss", ylims = (0.001,1), yscale = :log10, title = "Final loss"));
+	push!(plots[1], Plots.Image((x,y)->Flux.data(softmax(model([y, x])))[2], (0,1), (0, 1), colormap = ColorMaps.RGBArrayMap(colormap("RdBu"), invert = true, interpolation_levels= 500), zmin = 0, zmax = 1));
+	#push!(plots, plot(performance, label = "Loss", ylims = (0.001,1), yscale = :log10, title = "Final loss"));
 	i = 1;
 	jacobian = Vector{Matrix}();
 	for layer in model
 		if isa(layer, Target)
 			for (key, value) in layer.debuglog
 				if contains(key, "angle")
-					push!(plots, plot(value, label = "", title = "Layer " * string(i) * ": " * key, ylims = (0,180),))
+					#push!(plots, plot(value, label = "", title = "Layer " * string(i) * ": " * key, ylims = (0,180),))
 				elseif contains(key, "loss")
-					push!(plots, plot(value, label = "", title = "Layer " * string(i) * ": " * key, ylims = (0.001,1), yscale = :log10))
+					#push!(plots, plot(value, label = "", title = "Layer " * string(i) * ": " * key, ylims = (0.001,1), yscale = :log10))
 				elseif contains(key, "jacobian")
 					if size(jacobian) == (0,)
 						jacobian = value;
@@ -30,9 +31,9 @@ function plotModel(ds::Tuple{AbstractMatrix, Flux.OneHotMatrix}, model, performa
 	if size(jacobian) != (0,)
 		singularvalues = map(x->svdvals(x'), jacobian);
 		ratios = map(x->x[1] / x[end], singularvalues);
-		push!(plots, plot(acosd.(1 ./ ratios), label = "", title = "Maximum angle by theorem", ylims = (0,180),))
+		#push!(plots, plot(acosd.(1 ./ ratios), label = "", title = "Maximum angle by theorem", ylims = (0,180),))
 	end
-	plot(plots..., size = (1000, 800));
+	plot(plots[1])
 end
 
 numBatches = 2000;
@@ -54,10 +55,10 @@ testDS = generateTwoMoonDS(100);
 performance = Vector{Float32}(numBatches);
 
 for i in 1:numBatches
-	targettrain!(model, modelloss, [trainDS], ADAM(params(model)), η = 0.5, cb = () -> begin performance[i] = Flux.data(modelloss(model(testDS[1]), testDS[2])); end, debug = ["Classifier loss", "Auto-encoder loss", "angle", "jacobian"]);
+	targettrain!(model, modelloss, [trainDS], ADAM(params(model)), η = 0.5, cb = () -> begin performance[i] = Flux.data(modelloss(model(testDS[1]), testDS[2])); end, debug = ["Classifier loss", "Auto-encoder loss", "angle"]);
 end
 
-x = y = linspace(0, 1, 100);
-z = [Flux.data(model([yi, xi]))[2] for (xi, yi) in Base.product(x, y)];
+#x = y = linspace(0, 1, 100);
+#z = [Flux.data(model([yi, xi]))[2] for (xi, yi) in Base.product(x, y)];
 
 plotModel(testDS, model, performance);

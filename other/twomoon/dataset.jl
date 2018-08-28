@@ -1,5 +1,5 @@
 using Flux;
-using Plots;
+using PGFPlots;
 
 function generateTwoMoonDS(count::Int; T::Type = Float32, std = 0.025f0)::Tuple{AbstractMatrix, Flux.OneHotMatrix}
 	X = Matrix{T}(2, count);
@@ -22,7 +22,6 @@ function plotTwoMoonDS(ds::Tuple{AbstractMatrix, Flux.OneHotMatrix})
 	Y = Y[2, :];
 	negds = X[:, Y .== false];
 	posds = X[:, Y .== true];
-	res = scatter(getindex(negds, 1, :), getindex(negds, 2, :), label = "negative", aspect_ratio = :equal, xlims = (0:1), ylims = (0:1));
-	scatter!(res, getindex(posds, 1, :), getindex(posds, 2, :), label = "positive");
+	res = Axis([Plots.Scatter(getindex(negds, 1, :), getindex(negds, 2, :), legendentry = "negative"), Plots.Scatter(getindex(posds, 1, :), getindex(posds, 2, :), legendentry = "positive")], axisEqual = true, xmin = 0, xmax = 1, ymin = 0, ymax = 1);
 	return res;
 end
