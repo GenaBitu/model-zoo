@@ -34,11 +34,11 @@ function plotModel(ds::Tuple{AbstractMatrix, Flux.OneHotMatrix}, model, performa
 		ratios = map(x->x[1] / x[end], singularvalues);
 		push!(plots, plot(acosd.(1 ./ ratios), label = "", title = "Maximum angle by theorem", ylims = (0,180),))
 	end
-	plot(plots..., size = (1000, 800));
+	return plots;
 end
 
 numBatches = 2000;
-σ = Flux.swish;
+σ = Flux.relu;
 noiseDeviation = 0.2;
 loss = Flux.mse;
 modelloss(x, y) = Flux.mse(softmax(x), y);
