@@ -18,7 +18,7 @@ Layer(in::Int, out::Int) = Dense(in, out, σ);
 
 model = Chain(Layer(2, 16), Layer(16, 2));
 trainDS = generateTwoMoonDS(1000);
-testDS = generateTwoMoonDS(100);
+testDS = generateTwoMoonDS(1000);
 
 performance = Vector{Float32}(numBatches);
 
