@@ -7,7 +7,7 @@ include("dataset.jl")
 function plotModel(ds::Tuple{AbstractMatrix, Flux.OneHotMatrix}, model, performance)
 	plots = [plotTwoMoonDS(testDS)];
 	push!(plots[1], Plots.Image((x,y)->Flux.data(softmax(model([y, x])))[2], (0,1), (0, 1), colormap = ColorMaps.RGBArrayMap(colormap("RdBu"), invert = true, interpolation_levels= 500), zmin = 0, zmax = 1));
-	#push!(plots, plot(performance, label = "Loss", ylims = (0.001,1), yscale = :log10, title = "Final loss"));
+	#push!(plots, plot(performance, label = "Loss", ylims = (0.001, 1), yscale = :log10, title = "Final loss"));
 	i = 1;
 	jacobian = Vector{Matrix}();
 	for layer in model
@@ -21,7 +21,7 @@ function plotModel(ds::Tuple{AbstractMatrix, Flux.OneHotMatrix}, model, performa
 					if size(jacobian) == (0,)
 						jacobian = value;
 					else
-						jacobian .= value .* jacobian;
+						jacobian = value .* jacobian;
 					end
 				else
 					push!(plots, plot(value, label = "", title = "Layer " * string(i) * ": " * key, ylims = (0, 1)))
@@ -33,23 +33,19 @@ function plotModel(ds::Tuple{AbstractMatrix, Flux.OneHotMatrix}, model, performa
 	if size(jacobian) != (0,)
 		singularvalues = map(x->svdvals(x'), jacobian);
 		ratios = map(x->x[1] / x[end], singularvalues);
-		#push!(plots, plot(acosd.(1 ./ ratios), label = "", title = "Maximum angle by theorem", ylims = (0,180),))
+		#push!(plots, plot(acosd.(1 ./ ratios), label = "", title = "Maximum angle by theorem", ylims = (-10,180),))
 	end
-	plot(plots[1])
+	return plots;
 end
 
 numBatches = 2000;
-σ = Flux.swish;
+σ = Flux.relu;
 noiseDeviation = 0.2;
 loss = Flux.mse;
 modelloss(x, y) = Flux.mse(softmax(x), y);
-#reg = Flux.l2(0.000001);
-#reg = Flux.regcov(0.00001);
-#reg = Flux.l2(0);
 
 Layer(in::Int, out::Int) = Target(Chain(Dense(in, out, σ)), Chain(Dense(out, 8, σ), Dense(8, in, identity)), loss; σ = noiseDeviation);
 
-#model = Chain(Layer(2, 4), Layer(4, 8), Layer(8, 8), Layer(8, 4), Target(4, 2, tanh, loss; regulariser = reg));
 model = Chain(Layer(2, 16), Layer(16, 2));
 trainDS = generateTwoMoonDS(1000);
 testDS = generateTwoMoonDS(1000);
