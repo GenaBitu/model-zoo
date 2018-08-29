@@ -3,31 +3,30 @@ using Plots;
 
 include("dataset.jl")
 
-function plotModel(ds::Tuple{AbstractMatrix, AbstractVector}, model, performance)
-	p1 = plotTwoMoonDS(testDS);
-	heatmap!(p1, x, y, z, colorbar = false);
-	p2 = plot(performance, label="Loss", ylims = (0:1));
-	plot(p1, p2, layout=(1,2));
+function plotModel(ds::Tuple{AbstractMatrix, Flux.OneHotMatrix}, model, performance)
+	plots = [plotTwoMoonDS(testDS)];
+	heatmap!(plots[1], x, y, z, colorbar = false, title = "Heatmap");
+	push!(plots, plot(performance, label = "Loss", ylims = (0.001, 1), yscale = :log10, title = "Final loss"));
+	return plots;
 end
 
-numBatches = 10000;
+numBatches = 2000;
+σ = Flux.relu;
+modelloss(x, y) = Flux.mse(softmax(x), y);
 
-Layer(in::Int, out::Int) = Flux.Dense(in, out, Flux.swish);
+Layer(in::Int, out::Int) = Dense(in, out, σ);
 
-model = Chain(Layer(2, 4), Layer(4, 8), Layer(8, 8), Layer(8, 4), Dense(4, 2, tanh), softmax);
+model = Chain(Layer(2, 4), Layer(4, 8), Layer(8, 8), Layer(8, 4), Dense(4, 2, tanh));
 trainDS = generateTwoMoonDS(1000);
 testDS = generateTwoMoonDS(100);
-
-loss(x, y) = Flux.logitcrossentropy(model(x), Flux.onehotbatch(y, 1:2));
 
 performance = Vector{Float32}(numBatches);
 
 for i in 1:numBatches
-	Flux.train!(loss, [trainDS], ADAM(params(model)), cb = () -> begin performance[i] = Flux.data(loss(testDS...)); end);
+	Flux.train!((x, y)->modelloss(model(x), y), [trainDS], ADAM(params(model)), cb = () -> begin performance[i] = Flux.data(modelloss(model(testDS[1]), testDS[2])); end);
 end
 
-x = 0:0.01:1;
-y = 0:0.01:1;
-z = [model([yi, xi]).data[2] for (xi, yi) in Base.product(x, y)];
+x = y = linspace(0, 1, 100);
+z = [Flux.data(softmax(model([yi, xi])))[2] for (xi, yi) in Base.product(x, y)];
 
 plotModel(testDS, model, performance);
