@@ -14,9 +14,9 @@ function plotModel(ds::Tuple{AbstractMatrix, Flux.OneHotMatrix}, model, performa
 		if isa(layer, Target)
 			for (key, value) in layer.debuglog
 				if contains(key, "angle")
-					#push!(plots, plot(value, label = "", title = "Layer " * string(i) * ": " * key, ylims = (0,180),))
+					#push!(plots, plot(value, label = "", title = "Layer " * string(i) * ": " * key, ylims = (-10, 150)))
 				elseif contains(key, "loss")
-					#push!(plots, plot(value, label = "", title = "Layer " * string(i) * ": " * key, ylims = (0.001,1), yscale = :log10))
+					#push!(plots, plot(value, label = "", title = "Layer " * string(i) * ": " * key, ylims = (0.001, 1), yscale = :log10))
 				elseif contains(key, "jacobian")
 					if size(jacobian) == (0,)
 						jacobian = value;
@@ -33,7 +33,7 @@ function plotModel(ds::Tuple{AbstractMatrix, Flux.OneHotMatrix}, model, performa
 	if size(jacobian) != (0,)
 		singularvalues = map(x->svdvals(x'), jacobian);
 		ratios = map(x->x[1] / x[end], singularvalues);
-		#push!(plots, plot(acosd.(1 ./ ratios), label = "", title = "Maximum angle by theorem", ylims = (-10,180),))
+		#push!(plots, plot(acosd.(1 ./ ratios), label = "", title = "Maximum angle by theorem", ylims = (-10, 150)))
 	end
 	return plots;
 end
