@@ -16,7 +16,7 @@ modelloss(x, y) = Flux.mse(softmax(x), y);
 
 Layer(in::Int, out::Int) = Dense(in, out, σ);
 
-model = Chain(Layer(2, 4), Layer(4, 8), Layer(8, 8), Layer(8, 4), Dense(4, 2, tanh));
+model = Chain(Layer(2, 16), Layer(16, 2));
 trainDS = generateTwoMoonDS(1000);
 testDS = generateTwoMoonDS(100);
 
