@@ -34,8 +34,13 @@ function plotModel(ds::Tuple{AbstractMatrix, Flux.OneHotMatrix}, model, performa
 	end
 	if size(jacobian) != (0,)
 		singularvalues = map(x->svdvals(x'), jacobian);
-		ratios = map(x->x[1] / x[end], singularvalues);
-		#push!(plots, plot(acosd.(1 ./ ratios), label = "", title = "Maximum angle by theorem", ylims = (-10, 150)))
+		ratios = map(x->begin
+			if x[end] == x[1] == 0.0
+				return 0.0;
+			end
+			return x[end] / x[1];
+		end, singularvalues);
+		#push!(plots, plot(acosd.(ratios), label = "", title = "Maximum angle by theorem", ylims = (-10, 150)))
 	end
 	return plots;
 end
