@@ -2,8 +2,8 @@ using Flux;
 using Plots;
 
 function generateTwoMoonDS(count::Int; T::Type = Float32, std = 0.025f0)::Tuple{AbstractMatrix, Flux.OneHotMatrix}
-	X = Matrix{T}(2, count);
-	Y = Vector{Int}(count);
+	X = Matrix{T}(undef, 2, count);
+	Y = Vector{Int}(undef, count);
 	for i in 1:count
 		Y[i] = rand(1:2);
 		if Y[i] == 1
