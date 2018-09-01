@@ -8,7 +8,7 @@ function plotModel(ds::Tuple{AbstractMatrix, Flux.OneHotMatrix}, model, performa
 	x = y = range(0, stop = 1, length = 100);
 	z = [Flux.data(softmax(model([yi, xi])))[2] for (xi, yi) in Base.product(x, y)];
 	heatmap!(plots[1], x, y, z, colorbar = false, title = "Heatmap", clims = (0, 1));
-	push!(plots, plot(performance, label = "Loss", ylims = (0.001, 1), yscale = :log10, title = "Final loss"));
+	push!(plots, plot(performance, label = "Loss", ylims = (0.001, 1), yscale = :log10, title = "Model loss"));
 	return plots;
 end
 
