@@ -9,7 +9,7 @@ function plotModel(ds::Tuple{AbstractMatrix, Flux.OneHotMatrix}, model, performa
 	#x = y = linspace(0, 1, 100);
 	#z = [Flux.data(softmax(model([yi, xi])))[2] for (xi, yi) in Base.product(x, y)];
 	push!(plots[1], Plots.Image((x,y)->Flux.data(softmax(model([x, y])))[2], (0,1), (0, 1), colormap = ColorMaps.RGBArrayMap(colormap("RdBu"), invert = true, interpolation_levels= 500), zmin = 0, zmax = 1));
-	#push!(plots, plot(performance, label = "Loss", ylims = (0.001, 1), yscale = :log10, title = "Final loss"));
+	#push!(plots, plot(performance, label = "Loss", ylims = (0.001, 1), yscale = :log10, title = "Model loss"));
 	i = 1;
 	jacobian = Vector{Matrix}();
 	for layer in model
